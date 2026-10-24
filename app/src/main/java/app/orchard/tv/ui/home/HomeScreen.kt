@@ -613,6 +613,19 @@ fun HomeScreen(
                                     }
                                 },
                             rowEnd = index % COLUMNS == COLUMNS - 1 || index == apps.lastIndex,
+                            rowStart = index % COLUMNS == 0,
+                            // Rows wrap (#516): the tile right after the row's last one is the next
+                            // row's first, the tile before the row's first one is the row above's last.
+                            nextRowFirst = if (index % COLUMNS == COLUMNS - 1 && index < apps.lastIndex) {
+                                requester(apps[index + 1].key)
+                            } else {
+                                null
+                            },
+                            prevRowLast = if (index % COLUMNS == 0 && index >= COLUMNS) {
+                                requester(apps[index - 1].key)
+                            } else {
+                                null
+                            },
                             // On the glass plate only with every name shown (an earlier build showed
                             // the focused one alone there, but it sat oddly on the glass).
                             showName = plate == null || index >= COLUMNS || plateNames,

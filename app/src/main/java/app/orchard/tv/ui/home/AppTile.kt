@@ -130,6 +130,12 @@ fun AppTile(
     modifier: Modifier = Modifier,
     /** Last tile of its row: Right stops here instead of finding the status pill above (#211). */
     rowEnd: Boolean = false,
+    /** First tile of its row: Left wraps to the previous row's last tile. */
+    rowStart: Boolean = false,
+    /** Where Right goes at the end of a row: the first tile of the next row (null = stay put). */
+    nextRowFirst: FocusRequester? = null,
+    /** Where Left goes at the start of a row: the last tile of the previous row (null = stay put). */
+    prevRowLast: FocusRequester? = null,
     /** False on the glass plate: the top row shows no names there, as on tvOS 26. */
     showName: Boolean = true,
     /** The name sits on the glass plate, which ends just under it: it does not step down past the focus frame. */
@@ -369,7 +375,14 @@ fun AppTile(
                         },
                     )
                 }
-                .focusProperties { if (rowEnd) right = FocusRequester.Cancel }
+                .focusProperties {
+                    // Rows wrap around (#516): Right on a row's last tile goes to the first tile of
+                    // the next row, Left on a row's first tile goes to the last tile of the row
+                    // above. The last row keeps Right cancelled so it does not reach the status
+                    // pill (#211); the first row keeps Left at its Compose default.
+                    if (rowEnd) right = nextRowFirst ?: FocusRequester.Cancel
+                    if (rowStart && prevRowLast != null) left = prevRowLast
+                }
                 .focusable(enabled),
         ) {
             Spacer(Modifier.fillMaxSize().drawWithCache {
